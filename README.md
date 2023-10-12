@@ -1,5 +1,5 @@
 <h1 align="center">
-  LendTez
+  [LendTez](https://opdev3.github.io/lendtez/)
 </h1>
 
 
