@@ -40,10 +40,10 @@
 <body>
     
 <div class="container">
-<nav class="navbar has-background-info-light" role="navigation" aria-label="main navigation">
+<nav class="navbar has-background-success-light" role="navigation" aria-label="main navigation">
     <div class="navbar-brand ml-0 mr-5">
         <div class="navbar-item">
-            <p class="title has-text-info-dark is-3">LendTez</p>
+            <p class="title has-text-success-dark is-3 is-unselectable">LendTez<sup id="titleNetwork" class="has-text-weight-light is-size-6">&nbsp;mainnet</sup></p>
         </div>
         <div id="btnBurger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="true" data-target="navbarMenu"
              onclick="this.classList.toggle('is-active'); document.getElementById('navbarMenu').classList.toggle('is-active');">
@@ -52,7 +52,7 @@
             <span aria-hidden="true"></span>
         </div>
     </div>
-    <div id="navbarMenu" class="navbar-menu mx-0 has-background-info-light has-text-weight-semibold">
+    <div id="navbarMenu" class="navbar-menu mx-0 has-background-success-light has-text-weight-semibold">
         <div class="navbar-start">
             <a id="btnMyDeals" class="navbar-item">Deals</a>
             <a id="btnMyLoans" class="navbar-item">Borrow</a>
@@ -61,14 +61,14 @@
         </div>
         <div class="navbar-end ">
             <div id="divConnect" class="navbar-item has-text-centered py-1">
-                <button id="btnConnect" class="button is-info is-rounded has-text-weight-semibold">Connect wallet</button>
+                <button id="btnConnect" class="button is-success is-rounded has-text-weight-semibold">Connect wallet</button>
             </div>
             <div id="divDisconnect" class="navbar-item has-dropdown is-hoverable is-hidden">
                 <a class="navbar-link has-text-weight-semibold">
                     <span class="icon"><i class="fa-solid fa-user"></i></span>
                     <span id="aAddress"></span>
                 </a>
-                <div id="divUserMenu" class="navbar-dropdown has-background-info-light is-right">
+                <div id="divUserMenu" class="navbar-dropdown has-background-success-light is-right">
                     <a id="btnCopyAddress" class="navbar-item">
                         <span class="icon pr-2"><i class="fa-regular fa-copy"></i></span>
                         <span>Copy address</span>
@@ -117,7 +117,7 @@
 <div id="modalDeal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
-        <header class="modal-card-head has-background-info-light">
+        <header class="modal-card-head has-background-success-light">
             <div class="modal-card-title">
                 <h2 id="mdTitle" class="title is-3"></h2>
             </div>
@@ -179,9 +179,9 @@
                 </tbody>
             </table>
         </div>
-        <footer class="modal-card-foot has-background-info-light is-justify-content-center">
+        <footer class="modal-card-foot has-background-success-light is-justify-content-center">
             <div class="">
-                <button id="mdButton" class="button is-info is-rounded has-text-weight-semibold"></button>
+                <button id="mdButton" class="button is-success is-rounded has-text-weight-semibold"></button>
             </div>
         </footer>
     </div>
@@ -195,7 +195,7 @@
             <h2 class="title is-2">My loans</h2>
         </div>
         <div class="level-item is-justify-content-end is-pulled-right">
-            <button id="btnNewMyLoan" class="button is-info is-rounded has-text-weight-semibold" disabled="">
+            <button id="btnNewMyLoan" class="button is-success is-rounded has-text-weight-semibold" disabled="">
                 <span class="icon"><i class="fa-solid fa-plus"></i></span>
                 <span>New loan</span>
             </button>
@@ -223,7 +223,7 @@
 <div id="modalMyLoan" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
-        <header class="modal-card-head has-background-info-light">
+        <header class="modal-card-head has-background-success-light">
             <div class="modal-card-title">
                 <h2 id="mmlTitle" class="title is-3">New loan request</h2>
             </div>
@@ -283,7 +283,7 @@
                                 <div class="control">
                                     <div class="select is-fullwidth">
                                         <select id="mmlTime" class="js-calc-apr">
-                                            <option value="0.0021">3 min</option>
+                                            <!--<option value="0.0021">3 min</option>-->
                                             <option value="7">7 days</option>
                                             <option value="14">14 days</option>
                                             <option value="30">30 days</option>
@@ -379,9 +379,9 @@
             </div>
 
         </div>
-        <footer class="modal-card-foot has-background-info-light is-justify-content-center">
+        <footer class="modal-card-foot has-background-success-light is-justify-content-center">
             <div class="">
-                <button id="mmlButton" class="button is-info is-rounded has-text-weight-semibold">Create request</button>
+                <button id="mmlButton" class="button is-success is-rounded has-text-weight-semibold">Create request</button>
             </div>
         </footer>
     </div>
@@ -416,7 +416,7 @@
 <div id="modalLoan" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
-        <header class="modal-card-head has-background-info-light">
+        <header class="modal-card-head has-background-success-light">
             <div class="modal-card-title">
                 <h2 id="mlTitle" class="title is-3"></h2>
             </div>
@@ -471,9 +471,9 @@
                 </tbody>
             </table>
         </div>
-        <footer class="modal-card-foot has-background-info-light is-justify-content-center">
+        <footer class="modal-card-foot has-background-success-light is-justify-content-center">
             <div class="">
-                <button id="mlButton" class="button is-info is-rounded has-text-weight-semibold"></button>
+                <button id="mlButton" class="button is-success is-rounded has-text-weight-semibold"></button>
             </div>
         </footer>
     </div>
