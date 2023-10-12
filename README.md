@@ -1,5 +1,5 @@
 <h1 align="center">
-  [LendTez](https://opdev3.github.io/lendtez/)
+  <a href="https://opdev3.github.io/lendtez/">LendTez</a>
 </h1>
 
 
