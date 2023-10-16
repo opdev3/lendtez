@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://opdev3.github.io/lendtez/">LendTez</a>
+  <a href="https://lendtez.github.io/lendtez/">LendTez</a>
 </h1>
 
 
