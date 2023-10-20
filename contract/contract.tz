@@ -1,0 +1,2280 @@
+{
+    storage
+        (pair
+            (pair
+                (pair
+                    (set %admins address)
+                    (option %baker key_hash))
+                (pair
+                    (big_map %deals
+                        nat
+                        (pair
+                            (pair
+                                (pair
+                                    (address %borrower)
+                                    (address %creditor))
+                                (pair
+                                    (nat %deposit_amount)
+                                    (nat %deposit_token_id)))
+                            (pair
+                                (pair
+                                    (timestamp %exp)
+                                    (nat %loan_amount))
+                                (pair
+                                    (nat %loan_token_id)
+                                    (pair
+                                        (nat %reward)
+                                        (timestamp %ts))))))
+                    (pair
+                        (big_map %loans
+                            nat
+                            (pair
+                                (pair
+                                    (pair
+                                        (address %borrower)
+                                        (nat %deposit_amount))
+                                    (pair
+                                        (nat %deposit_token_id)
+                                        (nat %loan_amount)))
+                                (pair
+                                    (pair
+                                        (nat %loan_token_id)
+                                        (nat %reward))
+                                    (pair
+                                        (nat %time)
+                                        (pair
+                                            (timestamp %ts)
+                                            (option %validity timestamp))))))
+                        (nat %ndeal))))
+            (pair
+                (pair
+                    (nat %nloan)
+                    (nat %ntoken))
+                (pair
+                    (bool %pause)
+                    (pair
+                        (pair %time
+                            (nat %max)
+                            (nat %min))
+                        (big_map %tokens
+                            nat
+                            (pair
+                                (pair
+                                    (bool %active)
+                                    (pair
+                                        (address %address)
+                                        (nat %decimals)))
+                                (pair
+                                    (pair
+                                        (nat %locked_amount)
+                                        (string %name))
+                                    (pair
+                                        (nat %token_id)
+                                        (nat %type)))))))));
+    parameter
+        (or
+            (or
+                (or
+                    (address %add_admin)
+                    (or
+                        (pair %add_loan
+                            (pair
+                                (nat %deposit_amount)
+                                (pair
+                                    (nat %deposit_token_id)
+                                    (nat %loan_amount)))
+                            (pair
+                                (pair
+                                    (nat %loan_token_id)
+                                    (nat %reward))
+                                (pair
+                                    (nat %time)
+                                    (option %validity timestamp))))
+                        (pair %add_token
+                            (pair
+                                (address %address)
+                                (nat %decimals))
+                            (pair
+                                (string %name)
+                                (pair
+                                    (nat %token_id)
+                                    (nat %type))))))
+                (or
+                    (nat %cancel_loan)
+                    (or
+                        (nat %close_deal)
+                        (unit %default))))
+            (or
+                (or
+                    (option %delegate key_hash)
+                    (or
+                        (nat %make_deal)
+                        (bool %pause)))
+                (or
+                    (or
+                        (address %remove_admin)
+                        (pair %set_time
+                            (nat %max)
+                            (nat %min)))
+                    (or
+                        (pair %set_token_active
+                            (bool %active)
+                            (nat %id))
+                        (pair %withdraw
+                            (nat %amount)
+                            (pair
+                                (nat %id)
+                                (address %to)))))));
+    code
+        {
+            UNPAIR;
+            IF_LEFT
+                {
+                    IF_LEFT
+                        {
+                            IF_LEFT
+                                {
+                                    PUSH mutez 0;
+                                    AMOUNT;
+                                    COMPARE;
+                                    EQ;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                            FAILWITH
+                                        };
+                                    DUP 2;
+                                    CAR;
+                                    CAR;
+                                    CAR;
+                                    SENDER;
+                                    MEM;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ACCESS_DENIED";
+                                            FAILWITH
+                                        };
+                                    DUP 2;
+                                    CAR;
+                                    CAR;
+                                    CAR;
+                                    DUP 2;
+                                    MEM;
+                                    IF
+                                        {
+                                            PUSH string "ERR_ILLEGAL_ARGUMENT:address";
+                                            FAILWITH
+                                        }
+                                        {
+                                        };
+                                    SWAP;
+                                    UNPAIR;
+                                    UNPAIR;
+                                    UNPAIR;
+                                    PUSH bool True;
+                                    DIG 5;
+                                    UPDATE;
+                                    PAIR;
+                                    PAIR;
+                                    PAIR;
+                                    NIL operation
+                                }
+                                {
+                                    IF_LEFT
+                                        {
+                                            DUP 2;
+                                            GET 5;
+                                            IF
+                                                {
+                                                    PUSH string "ERR_PAUSED";
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            GET 3;
+                                            CAR;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:loan_token_id";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            GET 3;
+                                            CAR;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 294;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            CAR;
+                                            CAR;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:loan_token";
+                                                    FAILWITH
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            CAR;
+                                            GET 4;
+                                            COMPARE;
+                                            GT;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:loan_amount";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            CAR;
+                                            GET 3;
+                                            DUP 2;
+                                            GET 3;
+                                            CAR;
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:deposit_token";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:deposit_token_id";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 298;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            CAR;
+                                            CAR;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:deposit_token";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 7;
+                                            CDR;
+                                            DUP 2;
+                                            GET 5;
+                                            COMPARE;
+                                            GE;
+                                            IF
+                                                {
+                                                    DUP 2;
+                                                    GET 7;
+                                                    CAR;
+                                                    DUP 2;
+                                                    GET 5;
+                                                    COMPARE;
+                                                    LE
+                                                }
+                                                {
+                                                    PUSH bool False
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:time";
+                                                    FAILWITH
+                                                };
+                                            NONE timestamp;
+                                            DUP 2;
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    NOW;
+                                                    SOME;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    GT
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:validity";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 302;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    DROP;
+                                                    PUSH mutez 1;
+                                                    AMOUNT;
+                                                    EDIV;
+                                                    IF_NONE
+                                                        {
+                                                            UNIT;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    CAR;
+                                                    DUP 2;
+                                                    CAR;
+                                                    CAR;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                        }
+                                                        {
+                                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                            FAILWITH
+                                                        };
+                                                    NIL operation
+                                                }
+                                                {
+                                                    PUSH mutez 0;
+                                                    AMOUNT;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                        }
+                                                        {
+                                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                            FAILWITH
+                                                        };
+                                                    PUSH nat 0;
+                                                    DUP 3;
+                                                    CAR;
+                                                    CAR;
+                                                    COMPARE;
+                                                    GT;
+                                                    IF
+                                                        {
+                                                            PUSH nat 1;
+                                                            DUP 2;
+                                                            GET 6;
+                                                            COMPARE;
+                                                            EQ;
+                                                            IF
+                                                                {
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (pair
+                                                                            (address %from)
+                                                                            (pair
+                                                                                (address %to)
+                                                                                (nat %value)));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 66;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    NIL operation;
+                                                                    SWAP;
+                                                                    PUSH mutez 0;
+                                                                    DUP 4;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    SELF_ADDRESS;
+                                                                    SENDER;
+                                                                    PAIR 3;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                                {
+                                                                    NIL operation;
+                                                                    DUP 2;
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (list
+                                                                            (pair
+                                                                                (address %from_)
+                                                                                (list %txs
+                                                                                    (pair
+                                                                                        (address %to_)
+                                                                                        (pair
+                                                                                            (nat %token_id)
+                                                                                            (nat %amount))))));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 70;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    PUSH mutez 0;
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (list
+                                                                                (pair
+                                                                                    address
+                                                                                    (pair nat nat))));
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (pair nat nat));
+                                                                    DUP 7;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    DIG 6;
+                                                                    GET 5;
+                                                                    SELF_ADDRESS;
+                                                                    PAIR 3;
+                                                                    CONS;
+                                                                    SENDER;
+                                                                    PAIR;
+                                                                    CONS;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                        }
+                                                        {
+                                                            DROP;
+                                                            NIL operation
+                                                        }
+                                                };
+                                            DIG 2;
+                                            DUP;
+                                            GET 8;
+                                            DUP;
+                                            DUP 5;
+                                            CAR;
+                                            GET 3;
+                                            DUP;
+                                            DUG 2;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 309;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            DUP 9;
+                                            CAR;
+                                            CAR;
+                                            ADD;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            SOME;
+                                            SWAP;
+                                            UPDATE;
+                                            UPDATE 8;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            PUSH nat 1;
+                                            ADD;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            DUG 2;
+                                            DUP 3;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            DUP 7;
+                                            GET 6;
+                                            NOW;
+                                            PAIR;
+                                            DUP 8;
+                                            GET 5;
+                                            PAIR;
+                                            DUP 8;
+                                            GET 3;
+                                            CDR;
+                                            DUP 9;
+                                            GET 3;
+                                            CAR;
+                                            PAIR;
+                                            PAIR;
+                                            DUP 8;
+                                            CAR;
+                                            GET 4;
+                                            DUP 9;
+                                            CAR;
+                                            GET 3;
+                                            PAIR;
+                                            DIG 8;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            PAIR;
+                                            PAIR;
+                                            PAIR;
+                                            SOME;
+                                            DIG 7;
+                                            GET 3;
+                                            CAR;
+                                            UPDATE;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP
+                                        }
+                                        {
+                                            PUSH mutez 0;
+                                            AMOUNT;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    PUSH nat 1;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ
+                                                };
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    PUSH nat 2;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:type";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            DUP;
+                                            GET 8;
+                                            DUP 3;
+                                            GET 6;
+                                            DUP 4;
+                                            GET 5;
+                                            PAIR;
+                                            DUP 4;
+                                            GET 3;
+                                            PUSH nat 0;
+                                            PAIR;
+                                            PAIR;
+                                            DIG 3;
+                                            DUP;
+                                            CAR;
+                                            CDR;
+                                            SWAP;
+                                            CAR;
+                                            CAR;
+                                            PAIR;
+                                            PUSH bool True;
+                                            PAIR;
+                                            PAIR;
+                                            SOME;
+                                            DIG 3;
+                                            GET 3;
+                                            CDR;
+                                            UPDATE;
+                                            UPDATE 8;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            SWAP;
+                                            PUSH nat 1;
+                                            ADD;
+                                            SWAP;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            NIL operation
+                                        }
+                                }
+                        }
+                        {
+                            IF_LEFT
+                                {
+                                    PUSH mutez 0;
+                                    AMOUNT;
+                                    COMPARE;
+                                    EQ;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                            FAILWITH
+                                        };
+                                    DUP 2;
+                                    CAR;
+                                    GET 5;
+                                    DUP 2;
+                                    MEM;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                            FAILWITH
+                                        };
+                                    DUP 2;
+                                    CAR;
+                                    GET 5;
+                                    DUP 2;
+                                    GET;
+                                    IF_NONE
+                                        {
+                                            PUSH int 336;
+                                            FAILWITH
+                                        }
+                                        {
+                                        };
+                                    DUP;
+                                    CAR;
+                                    CAR;
+                                    CAR;
+                                    SENDER;
+                                    COMPARE;
+                                    EQ;
+                                    IF
+                                        {
+                                            PUSH bool True
+                                        }
+                                        {
+                                            DUP 3;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM
+                                        };
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ACCESS_DENIED";
+                                            FAILWITH
+                                        };
+                                    PUSH nat 0;
+                                    DUP 2;
+                                    CAR;
+                                    CAR;
+                                    CDR;
+                                    COMPARE;
+                                    GT;
+                                    IF
+                                        {
+                                            DUP 3;
+                                            GET 8;
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 421;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    DROP;
+                                                    NIL operation;
+                                                    DUP 2;
+                                                    CAR;
+                                                    CAR;
+                                                    CAR;
+                                                    CONTRACT unit;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 423;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    PUSH mutez 1;
+                                                    DUP 4;
+                                                    CAR;
+                                                    CAR;
+                                                    CDR;
+                                                    MUL;
+                                                    UNIT;
+                                                    TRANSFER_TOKENS;
+                                                    CONS
+                                                }
+                                                {
+                                                    PUSH nat 1;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                            CAR;
+                                                            GET 3;
+                                                            CONTRACT %transfer
+                                                                (pair
+                                                                    (address %from)
+                                                                    (pair
+                                                                        (address %to)
+                                                                        (nat %value)));
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 66;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            NIL operation;
+                                                            SWAP;
+                                                            PUSH mutez 0;
+                                                            DUP 4;
+                                                            CAR;
+                                                            CAR;
+                                                            CDR;
+                                                            DUP 5;
+                                                            CAR;
+                                                            CAR;
+                                                            CAR;
+                                                            SELF_ADDRESS;
+                                                            PAIR 3;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                        {
+                                                            NIL operation;
+                                                            DUP 2;
+                                                            CAR;
+                                                            GET 3;
+                                                            CONTRACT %transfer
+                                                                (list
+                                                                    (pair
+                                                                        (address %from_)
+                                                                        (list %txs
+                                                                            (pair
+                                                                                (address %to_)
+                                                                                (pair
+                                                                                    (nat %token_id)
+                                                                                    (nat %amount))))));
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 70;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            PUSH mutez 0;
+                                                            NIL
+                                                                (pair
+                                                                    address
+                                                                    (list
+                                                                        (pair
+                                                                            address
+                                                                            (pair nat nat))));
+                                                            NIL
+                                                                (pair
+                                                                    address
+                                                                    (pair nat nat));
+                                                            DUP 7;
+                                                            CAR;
+                                                            CAR;
+                                                            CDR;
+                                                            DIG 6;
+                                                            GET 5;
+                                                            DUP 8;
+                                                            CAR;
+                                                            CAR;
+                                                            CAR;
+                                                            PAIR 3;
+                                                            CONS;
+                                                            SELF_ADDRESS;
+                                                            PAIR;
+                                                            CONS;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CDR;
+                                            DUP 5;
+                                            GET 8;
+                                            DUP 4;
+                                            CAR;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 426;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            GET 3;
+                                            CAR;
+                                            SUB;
+                                            ISNAT;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 426;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            DIG 4;
+                                            DUP;
+                                            GET 8;
+                                            DUP;
+                                            DIG 5;
+                                            CAR;
+                                            GET 3;
+                                            DUP;
+                                            DUG 2;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 426;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            CDR;
+                                            DIG 6;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            SOME;
+                                            SWAP;
+                                            UPDATE;
+                                            UPDATE 8;
+                                            DUG 2
+                                        }
+                                        {
+                                            DROP;
+                                            NIL operation
+                                        };
+                                    DIG 2;
+                                    UNPAIR;
+                                    UNPAIR;
+                                    SWAP;
+                                    UNPAIR;
+                                    SWAP;
+                                    UNPAIR;
+                                    NONE
+                                        (pair
+                                            (pair
+                                                (pair address nat)
+                                                (pair nat nat))
+                                            (pair
+                                                (pair nat nat)
+                                                (pair
+                                                    nat
+                                                    (pair
+                                                        timestamp
+                                                        (option timestamp)))));
+                                    DIG 7;
+                                    UPDATE;
+                                    PAIR;
+                                    SWAP;
+                                    PAIR;
+                                    SWAP;
+                                    PAIR;
+                                    PAIR;
+                                    SWAP
+                                }
+                                {
+                                    IF_LEFT
+                                        {
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            DUP 2;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            GET 3;
+                                            DUP 2;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 393;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            DUP;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    DUP;
+                                                    CAR;
+                                                    CAR;
+                                                    CDR;
+                                                    SENDER;
+                                                    COMPARE;
+                                                    EQ
+                                                };
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    DUP 3;
+                                                    CAR;
+                                                    CAR;
+                                                    CAR;
+                                                    SENDER;
+                                                    MEM
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            SELF_ADDRESS;
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    DUP 4;
+                                                    GET 8;
+                                                    DUP 3;
+                                                    GET 5;
+                                                    GET;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 397;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    PUSH nat 0;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                            DROP 2;
+                                                            PUSH mutez 1;
+                                                            AMOUNT;
+                                                            EDIV;
+                                                            IF_NONE
+                                                                {
+                                                                    UNIT;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            CAR;
+                                                            DUP 2;
+                                                            GET 7;
+                                                            DUP 3;
+                                                            GET 3;
+                                                            CDR;
+                                                            ADD;
+                                                            COMPARE;
+                                                            EQ;
+                                                            IF
+                                                                {
+                                                                }
+                                                                {
+                                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                                    FAILWITH
+                                                                };
+                                                            NIL operation;
+                                                            DUP 2;
+                                                            CAR;
+                                                            CAR;
+                                                            CDR;
+                                                            CONTRACT unit;
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 400;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            AMOUNT;
+                                                            UNIT;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                        {
+                                                            SWAP;
+                                                            DROP;
+                                                            PUSH mutez 0;
+                                                            AMOUNT;
+                                                            COMPARE;
+                                                            EQ;
+                                                            IF
+                                                                {
+                                                                }
+                                                                {
+                                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                                    FAILWITH
+                                                                };
+                                                            PUSH nat 1;
+                                                            DUP 2;
+                                                            GET 6;
+                                                            COMPARE;
+                                                            EQ;
+                                                            IF
+                                                                {
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (pair
+                                                                            (address %from)
+                                                                            (pair
+                                                                                (address %to)
+                                                                                (nat %value)));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 66;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    NIL operation;
+                                                                    SWAP;
+                                                                    PUSH mutez 0;
+                                                                    DUP 4;
+                                                                    GET 7;
+                                                                    DUP 5;
+                                                                    GET 3;
+                                                                    CDR;
+                                                                    ADD;
+                                                                    DUP 5;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    CDR;
+                                                                    DUP 6;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    PAIR 3;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                                {
+                                                                    NIL operation;
+                                                                    DUP 2;
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (list
+                                                                            (pair
+                                                                                (address %from_)
+                                                                                (list %txs
+                                                                                    (pair
+                                                                                        (address %to_)
+                                                                                        (pair
+                                                                                            (nat %token_id)
+                                                                                            (nat %amount))))));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 70;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    PUSH mutez 0;
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (list
+                                                                                (pair
+                                                                                    address
+                                                                                    (pair nat nat))));
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (pair nat nat));
+                                                                    DUP 7;
+                                                                    GET 7;
+                                                                    DUP 8;
+                                                                    GET 3;
+                                                                    CDR;
+                                                                    ADD;
+                                                                    DIG 6;
+                                                                    GET 5;
+                                                                    DUP 8;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    CDR;
+                                                                    PAIR 3;
+                                                                    CONS;
+                                                                    DUP 6;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    CAR;
+                                                                    PAIR;
+                                                                    CONS;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                        };
+                                                    DUP 2;
+                                                    CAR;
+                                                    CAR;
+                                                    CAR;
+                                                    SWAP
+                                                }
+                                                {
+                                                    DROP;
+                                                    NOW;
+                                                    DUP 2;
+                                                    GET 3;
+                                                    CAR;
+                                                    COMPARE;
+                                                    LT;
+                                                    IF
+                                                        {
+                                                        }
+                                                        {
+                                                            PUSH string "ERR_ACCESS_DENIED";
+                                                            FAILWITH
+                                                        };
+                                                    DUP;
+                                                    CAR;
+                                                    CAR;
+                                                    CDR;
+                                                    NIL operation
+                                                };
+                                            PUSH nat 0;
+                                            DUP 4;
+                                            CAR;
+                                            GET 3;
+                                            COMPARE;
+                                            GT;
+                                            IF
+                                                {
+                                                    DUP 5;
+                                                    GET 8;
+                                                    DUP 4;
+                                                    CAR;
+                                                    GET 4;
+                                                    GET;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 421;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    PUSH nat 0;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                            DROP;
+                                                            SWAP;
+                                                            CONTRACT unit;
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 423;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            PUSH mutez 1;
+                                                            DUP 4;
+                                                            CAR;
+                                                            GET 3;
+                                                            MUL;
+                                                            UNIT;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                        {
+                                                            PUSH nat 1;
+                                                            DUP 2;
+                                                            GET 6;
+                                                            COMPARE;
+                                                            EQ;
+                                                            IF
+                                                                {
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (pair
+                                                                            (address %from)
+                                                                            (pair
+                                                                                (address %to)
+                                                                                (nat %value)));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 66;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    PUSH mutez 0;
+                                                                    DUP 5;
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    DIG 4;
+                                                                    SELF_ADDRESS;
+                                                                    PAIR 3;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                                {
+                                                                    SWAP;
+                                                                    DUP 2;
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    CONTRACT %transfer
+                                                                        (list
+                                                                            (pair
+                                                                                (address %from_)
+                                                                                (list %txs
+                                                                                    (pair
+                                                                                        (address %to_)
+                                                                                        (pair
+                                                                                            (nat %token_id)
+                                                                                            (nat %amount))))));
+                                                                    IF_NONE
+                                                                        {
+                                                                            PUSH int 70;
+                                                                            FAILWITH
+                                                                        }
+                                                                        {
+                                                                        };
+                                                                    PUSH mutez 0;
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (list
+                                                                                (pair
+                                                                                    address
+                                                                                    (pair nat nat))));
+                                                                    NIL
+                                                                        (pair
+                                                                            address
+                                                                            (pair nat nat));
+                                                                    DUP 8;
+                                                                    CAR;
+                                                                    GET 3;
+                                                                    DIG 6;
+                                                                    GET 5;
+                                                                    DIG 7;
+                                                                    PAIR 3;
+                                                                    CONS;
+                                                                    SELF_ADDRESS;
+                                                                    PAIR;
+                                                                    CONS;
+                                                                    TRANSFER_TOKENS;
+                                                                    CONS
+                                                                }
+                                                        };
+                                                    DUP 2;
+                                                    CAR;
+                                                    GET 3;
+                                                    DUP 5;
+                                                    GET 8;
+                                                    DUP 4;
+                                                    CAR;
+                                                    GET 4;
+                                                    GET;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 426;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    GET 3;
+                                                    CAR;
+                                                    SUB;
+                                                    ISNAT;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 426;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    DIG 4;
+                                                    DUP;
+                                                    GET 8;
+                                                    DUP;
+                                                    DIG 5;
+                                                    CAR;
+                                                    GET 4;
+                                                    DUP;
+                                                    DUG 2;
+                                                    GET;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 426;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    UNPAIR;
+                                                    SWAP;
+                                                    UNPAIR;
+                                                    CDR;
+                                                    DIG 6;
+                                                    PAIR;
+                                                    PAIR;
+                                                    SWAP;
+                                                    PAIR;
+                                                    SOME;
+                                                    SWAP;
+                                                    UPDATE;
+                                                    UPDATE 8;
+                                                    DUG 2
+                                                }
+                                                {
+                                                    SWAP;
+                                                    DROP;
+                                                    SWAP;
+                                                    DROP
+                                                };
+                                            DIG 2;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            NONE
+                                                (pair
+                                                    (pair
+                                                        (pair address address)
+                                                        (pair nat nat))
+                                                    (pair
+                                                        (pair timestamp nat)
+                                                        (pair
+                                                            nat
+                                                            (pair nat timestamp))));
+                                            DIG 6;
+                                            UPDATE;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP
+                                        }
+                                        {
+                                            DROP;
+                                            NIL operation
+                                        }
+                                }
+                        }
+                }
+                {
+                    IF_LEFT
+                        {
+                            IF_LEFT
+                                {
+                                    PUSH mutez 0;
+                                    AMOUNT;
+                                    COMPARE;
+                                    EQ;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                            FAILWITH
+                                        };
+                                    DUP 2;
+                                    CAR;
+                                    CAR;
+                                    CAR;
+                                    SENDER;
+                                    MEM;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ACCESS_DENIED";
+                                            FAILWITH
+                                        };
+                                    DUP;
+                                    DUP 3;
+                                    CAR;
+                                    CAR;
+                                    CDR;
+                                    COMPARE;
+                                    NEQ;
+                                    IF
+                                        {
+                                        }
+                                        {
+                                            PUSH string "ERR_ILLEGAL_ARGUMENT:baker";
+                                            FAILWITH
+                                        };
+                                    SWAP;
+                                    UNPAIR;
+                                    UNPAIR;
+                                    CAR;
+                                    DUP 4;
+                                    SWAP;
+                                    PAIR;
+                                    PAIR;
+                                    PAIR;
+                                    SWAP;
+                                    SET_DELEGATE;
+                                    NIL operation;
+                                    SWAP;
+                                    CONS
+                                }
+                                {
+                                    IF_LEFT
+                                        {
+                                            DUP 2;
+                                            GET 5;
+                                            IF
+                                                {
+                                                    PUSH string "ERR_PAUSED";
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            GET 5;
+                                            DUP 2;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            GET 5;
+                                            DUP 2;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 354;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            SENDER;
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:sender";
+                                                    FAILWITH
+                                                };
+                                            NONE timestamp;
+                                            DUP 2;
+                                            GET 8;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    PUSH bool True
+                                                }
+                                                {
+                                                    NOW;
+                                                    SOME;
+                                                    DUP 2;
+                                                    GET 8;
+                                                    COMPARE;
+                                                    GT
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:now";
+                                                    FAILWITH
+                                                };
+                                            DUP 3;
+                                            GET 8;
+                                            DUP 2;
+                                            GET 3;
+                                            CAR;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 357;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                    DROP;
+                                                    PUSH mutez 1;
+                                                    AMOUNT;
+                                                    EDIV;
+                                                    IF_NONE
+                                                        {
+                                                            UNIT;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    CAR;
+                                                    DUP 2;
+                                                    CAR;
+                                                    GET 4;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                        }
+                                                        {
+                                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                            FAILWITH
+                                                        };
+                                                    NIL operation;
+                                                    DUP 2;
+                                                    CAR;
+                                                    CAR;
+                                                    CAR;
+                                                    CONTRACT unit;
+                                                    IF_NONE
+                                                        {
+                                                            PUSH int 360;
+                                                            FAILWITH
+                                                        }
+                                                        {
+                                                        };
+                                                    AMOUNT;
+                                                    UNIT;
+                                                    TRANSFER_TOKENS;
+                                                    CONS
+                                                }
+                                                {
+                                                    PUSH mutez 0;
+                                                    AMOUNT;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                        }
+                                                        {
+                                                            PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                            FAILWITH
+                                                        };
+                                                    PUSH nat 1;
+                                                    DUP 2;
+                                                    GET 6;
+                                                    COMPARE;
+                                                    EQ;
+                                                    IF
+                                                        {
+                                                            CAR;
+                                                            GET 3;
+                                                            CONTRACT %transfer
+                                                                (pair
+                                                                    (address %from)
+                                                                    (pair
+                                                                        (address %to)
+                                                                        (nat %value)));
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 66;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            NIL operation;
+                                                            SWAP;
+                                                            PUSH mutez 0;
+                                                            DUP 4;
+                                                            CAR;
+                                                            GET 4;
+                                                            DUP 5;
+                                                            CAR;
+                                                            CAR;
+                                                            CAR;
+                                                            SENDER;
+                                                            PAIR 3;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                        {
+                                                            NIL operation;
+                                                            DUP 2;
+                                                            CAR;
+                                                            GET 3;
+                                                            CONTRACT %transfer
+                                                                (list
+                                                                    (pair
+                                                                        (address %from_)
+                                                                        (list %txs
+                                                                            (pair
+                                                                                (address %to_)
+                                                                                (pair
+                                                                                    (nat %token_id)
+                                                                                    (nat %amount))))));
+                                                            IF_NONE
+                                                                {
+                                                                    PUSH int 70;
+                                                                    FAILWITH
+                                                                }
+                                                                {
+                                                                };
+                                                            PUSH mutez 0;
+                                                            NIL
+                                                                (pair
+                                                                    address
+                                                                    (list
+                                                                        (pair
+                                                                            address
+                                                                            (pair nat nat))));
+                                                            NIL
+                                                                (pair
+                                                                    address
+                                                                    (pair nat nat));
+                                                            DUP 7;
+                                                            CAR;
+                                                            GET 4;
+                                                            DIG 6;
+                                                            GET 5;
+                                                            DUP 8;
+                                                            CAR;
+                                                            CAR;
+                                                            CAR;
+                                                            PAIR 3;
+                                                            CONS;
+                                                            SENDER;
+                                                            PAIR;
+                                                            CONS;
+                                                            TRANSFER_TOKENS;
+                                                            CONS
+                                                        }
+                                                };
+                                            DIG 3;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            SWAP;
+                                            PUSH nat 1;
+                                            ADD;
+                                            SWAP;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            PAIR;
+                                            DUG 3;
+                                            DUP 4;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            SWAP;
+                                            UNPAIR;
+                                            NOW;
+                                            DUP 7;
+                                            GET 3;
+                                            CDR;
+                                            PAIR;
+                                            DUP 7;
+                                            GET 3;
+                                            CAR;
+                                            PAIR;
+                                            DUP 7;
+                                            CAR;
+                                            GET 4;
+                                            DUP 8;
+                                            GET 5;
+                                            INT;
+                                            NOW;
+                                            ADD;
+                                            PAIR;
+                                            PAIR;
+                                            DUP 7;
+                                            CAR;
+                                            GET 3;
+                                            DUP 8;
+                                            CAR;
+                                            CAR;
+                                            CDR;
+                                            PAIR;
+                                            SENDER;
+                                            DIG 8;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            PAIR;
+                                            PAIR;
+                                            PAIR;
+                                            SOME;
+                                            DIG 7;
+                                            CAR;
+                                            GET 6;
+                                            UPDATE;
+                                            SWAP;
+                                            UNPAIR;
+                                            NONE
+                                                (pair
+                                                    (pair
+                                                        (pair address nat)
+                                                        (pair nat nat))
+                                                    (pair
+                                                        (pair nat nat)
+                                                        (pair
+                                                            nat
+                                                            (pair
+                                                                timestamp
+                                                                (option timestamp)))));
+                                            DIG 7;
+                                            UPDATE;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            SWAP;
+                                            PAIR;
+                                            PAIR;
+                                            SWAP
+                                        }
+                                        {
+                                            PUSH mutez 0;
+                                            AMOUNT;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            DUP 3;
+                                            GET 5;
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:pause";
+                                                    FAILWITH
+                                                };
+                                            UPDATE 5;
+                                            NIL operation
+                                        }
+                                }
+                        }
+                        {
+                            IF_LEFT
+                                {
+                                    IF_LEFT
+                                        {
+                                            PUSH mutez 0;
+                                            AMOUNT;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            PUSH address "tz1PnmDB9a6zWSD1oMFtrxbqd4Kjyh238djg";
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:address";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            DUP 2;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:address";
+                                                    FAILWITH
+                                                };
+                                            SWAP;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            UNPAIR;
+                                            PUSH bool False;
+                                            DIG 5;
+                                            UPDATE;
+                                            PAIR;
+                                            PAIR;
+                                            PAIR
+                                        }
+                                        {
+                                            PUSH mutez 0;
+                                            AMOUNT;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            DUP 3;
+                                            GET 7;
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:min,max";
+                                                    FAILWITH
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            CDR;
+                                            COMPARE;
+                                            GT;
+                                            IF
+                                                {
+                                                    DUP;
+                                                    CAR;
+                                                    DUP 2;
+                                                    CDR;
+                                                    COMPARE;
+                                                    LE
+                                                }
+                                                {
+                                                    PUSH bool False
+                                                };
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:min";
+                                                    FAILWITH
+                                                };
+                                            UPDATE 7
+                                        };
+                                    NIL operation
+                                }
+                                {
+                                    IF_LEFT
+                                        {
+                                            PUSH mutez 0;
+                                            AMOUNT;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_TX_AMOUNT";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            CDR;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            CAR;
+                                            DUP 3;
+                                            GET 8;
+                                            DUP 3;
+                                            CDR;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 264;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            CAR;
+                                            CAR;
+                                            COMPARE;
+                                            NEQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:active";
+                                                    FAILWITH
+                                                };
+                                            SWAP;
+                                            DUP;
+                                            GET 8;
+                                            DUP;
+                                            DUP 4;
+                                            CDR;
+                                            DUP;
+                                            DUG 2;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 265;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            UNPAIR;
+                                            CDR;
+                                            DIG 5;
+                                            CAR;
+                                            PAIR;
+                                            PAIR;
+                                            SOME;
+                                            SWAP;
+                                            UPDATE;
+                                            UPDATE 8;
+                                            NIL operation
+                                        }
+                                        {
+                                            DUP 2;
+                                            CAR;
+                                            CAR;
+                                            CAR;
+                                            SENDER;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ACCESS_DENIED";
+                                                    FAILWITH
+                                                };
+                                            DUP 2;
+                                            GET 8;
+                                            DUP 2;
+                                            GET 3;
+                                            MEM;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                                    FAILWITH
+                                                };
+                                            PUSH nat 0;
+                                            DUP 3;
+                                            GET 8;
+                                            DUP 3;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 130;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            GET 6;
+                                            COMPARE;
+                                            EQ;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:id";
+                                                    FAILWITH
+                                                };
+                                            PUSH nat 0;
+                                            DUP 2;
+                                            CAR;
+                                            COMPARE;
+                                            GT;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:amount";
+                                                    FAILWITH
+                                                };
+                                            DUP;
+                                            CAR;
+                                            DUP 3;
+                                            GET 8;
+                                            DUP 3;
+                                            GET 3;
+                                            GET;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 132;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            GET 3;
+                                            CAR;
+                                            ADD;
+                                            PUSH mutez 1;
+                                            BALANCE;
+                                            EDIV;
+                                            IF_NONE
+                                                {
+                                                    UNIT;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            CAR;
+                                            COMPARE;
+                                            GE;
+                                            IF
+                                                {
+                                                }
+                                                {
+                                                    PUSH string "ERR_ILLEGAL_ARGUMENT:amount";
+                                                    FAILWITH
+                                                };
+                                            NIL operation;
+                                            DUP 2;
+                                            GET 4;
+                                            CONTRACT unit;
+                                            IF_NONE
+                                                {
+                                                    PUSH int 133;
+                                                    FAILWITH
+                                                }
+                                                {
+                                                };
+                                            PUSH mutez 1;
+                                            DIG 3;
+                                            CAR;
+                                            MUL;
+                                            UNIT;
+                                            TRANSFER_TOKENS;
+                                            CONS
+                                        }
+                                }
+                        }
+                };
+            NIL operation;
+            SWAP;
+            ITER
+                {
+                    CONS
+                };
+            PAIR
+        }
+}
